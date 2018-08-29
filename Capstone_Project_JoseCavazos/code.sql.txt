@@ -1,0 +1,206 @@
+--Capstone:Funnels with “Warby Parker”
+Learn SQL from Scratch
+José Cavazos
+8/28/2018
+
+
+*CAPSTONE QESTION-1
+
+SELECT *
+FROM survey
+LIMIT 10 ;
+
+
+*CAPSTONE QESTION-2
+
+SELECT question, COUNT(DISTINCT user_id)
+AS 'Responses Per Question'
+FROM survey
+GROUP BY 1;
+
+SELECT COUNT(DISTINCT user_id)
+AS 'Total User Count'
+FROM survey;
+
+
+*CAPSTONE QESTION-3
+
+excel table is in presentation
+
+The most common results of the style quiz.
+--Q3
+WITH Q3 AS(
+SELECT *
+FROM survey 
+WHERE question LIKE '3%' )
+SELECT DISTINCT response
+AS 'Q3 Responses', COUNT(*) AS 'Shape'
+FROM Q3
+GROUP BY 1
+ORDER BY 2 DESC ;
+--Q4
+WITH Q4 AS(
+SELECT *
+FROM survey 
+WHERE question LIKE '4%' )
+SELECT DISTINCT response
+AS 'Q4 Responses', COUNT(*) AS 'Color'
+FROM Q4
+GROUP BY 1
+ORDER BY 2 DESC ;
+--Q5
+WITH Q5 AS(
+SELECT *
+FROM survey 
+WHERE question LIKE '5%' )
+SELECT DISTINCT response
+AS 'Q5 Responses', COUNT(*) AS 'LastExam'
+FROM Q5
+GROUP BY 1
+ORDER BY 2 DESC ;
+
+*CAPSTONE QESTION-4
+--a.
+SELECT *
+FROM quiz
+LIMIT 5 ;
+
+--For quiz findings
+SELECT style,
+COUNT(user_id) AS 'style_count'
+FROM quiz
+GROUP BY 1
+ORDER BY 2 DESC;
+
+SELECT fit,
+COUNT(user_id) AS 'color_count'
+FROM quiz
+GROUP BY 1
+ORDER BY 2 DESC;
+
+SELECT color,
+COUNT(user_id) AS 'color_count'
+FROM quiz
+GROUP BY 1
+ORDER BY 2 DESC;
+
+--b.
+SELECT *
+FROM home_try_on
+LIMIT 5 ;
+
+-- For home_try_on findings
+SELECT number_of_pairs,
+COUNT(user_id) AS 'user_count'
+FROM home_try_on 
+GROUP BY 1
+ORDER BY 2 DESC; 
+
+--c.
+SELECT *
+FROM purchase
+LIMIT 5 ;
+
+-- For purchase findings
+SELECT model_name,
+COUNT(user_id) AS 'model_count'
+FROM purchase
+GROUP BY 1
+ORDER BY 2 DESC;
+
+SELECT DISTINCT model_name, price
+FROM purchase
+GROUP BY 1
+ORDER BY 2 DESC;
+
+WITH model AS (
+SELECT DISTINCT model_name, price
+FROM purchase)
+SELECT ROUND(AVG(price),2) AS 'AVG PRICE'
+FROM model;
+
+*CAPSTONE QESTION-5
+
+SELECT DISTINCT Q.user_id , 
+H.user_id IS NOT NULL AS 'is_home_try_on', 
+H.number_of_pairs ,  
+P.user_id IS NOT NULL AS 'is_purchase'
+FROM quiz AS 'Q'
+LEFT JOIN home_try_on AS 'H'
+	ON Q.user_id = H.user_id
+LEFT JOIN purchase AS 'P'
+ON P.user_id = Q.user_id 
+LIMIT 10;
+
+*CAPSTONE QESTION-6
+--1
+WITH HTO_FUNNEL AS (
+SELECT DISTINCT Q.user_id , 
+H.user_id IS NOT NULL AS 'is_home_try_on', 
+H.number_of_pairs ,  
+P.user_id IS NOT NULL AS 'is_purchase'
+FROM quiz AS 'Q'
+LEFT JOIN home_try_on AS 'H'
+	ON Q.user_id = H.user_id
+LEFT JOIN purchase AS 'P'
+ON P.user_id = Q.user_id)
+
+SELECT COUNT(*) AS 'TOTAL_QUIZZES',
+SUM(is_home_try_on) AS 'TOTAL_HOMETRYON',
+SUM(is_purchase) AS 'TOTAL_PURCHASED'
+FROM HTO_FUNNEL;
+
+--2
+WITH HTO_FUNNEL AS (
+SELECT DISTINCT Q.user_id , 
+H.user_id IS NOT NULL AS 'is_home_try_on', 
+H.number_of_pairs ,  
+P.user_id IS NOT NULL AS 'is_purchase'
+FROM quiz AS 'Q'
+LEFT JOIN home_try_on AS 'H'
+	ON Q.user_id = H.user_id
+LEFT JOIN purchase AS 'P'
+ON P.user_id = Q.user_id)
+
+SELECT 1.0 *SUM(is_home_try_on) / COUNT(user_id) AS '%_QUIZ_TO_HOMETRYON',
+1.0 *SUM(is_purchase) / SUM(is_home_try_on) AS '%_HTO_TO_PURCHASE',
+1.0 *SUM(is_purchase) / COUNT(*) AS '%_QUIZ_TO_PURCHASE'
+FROM HTO_FUNNEL;
+
+--3
+WITH HTO_FUNNEL AS (
+SELECT DISTINCT Q.user_id , 
+H.user_id IS NOT NULL AS 'is_home_try_on', 
+H.number_of_pairs ,  
+P.user_id IS NOT NULL AS 'is_purchase'
+FROM quiz AS 'Q'
+LEFT JOIN home_try_on AS 'H'
+	ON Q.user_id = H.user_id
+LEFT JOIN purchase AS 'P'
+ON P.user_id = Q.user_id)
+
+SELECT SUM(is_home_try_on) AS 'TOTAL_HOMETRYON_3',
+SUM(is_purchase) AS 'TOTAL_PURCHASED',
+ROUND(1.0 *SUM(is_purchase) / SUM(is_home_try_on),2) AS '%_CHECKOUT_TO_PURCHASE'
+FROM HTO_FUNNEL
+WHERE number_of_pairs LIKE '%3%';
+
+--4
+WITH HTO_FUNNEL AS (
+SELECT DISTINCT Q.user_id , 
+H.user_id IS NOT NULL AS 'is_home_try_on', 
+H.number_of_pairs ,  
+P.user_id IS NOT NULL AS 'is_purchase'
+FROM quiz AS 'Q'
+LEFT JOIN home_try_on AS 'H'
+	ON Q.user_id = H.user_id
+LEFT JOIN purchase AS 'P'
+ON P.user_id = Q.user_id)
+
+SELECT SUM(is_home_try_on) AS 'TOTAL_HOMETRYON_5',
+SUM(is_purchase) AS 'TOTAL_PURCHASED',
+ROUND(1.0 *SUM(is_purchase) / SUM(is_home_try_on),2) AS '%_CHECKOUT_TO_PURCHASE'
+FROM HTO_FUNNEL
+WHERE number_of_pairs LIKE '%5%';
+
+actionable insights are on slide 23
